@@ -81,40 +81,56 @@ def write_pairs(csv_filename,pairs):
 #return an empty set.
 def find_rogues(pairs_filename, priorities_filename):
     #TODO: identify rogue pairings
-    pairs = read_pairs("size_6_parings_0.csv")
-    priorities = read_priorities("size_6_priorities.csv")
+    outputfile = open("roguepairings.txt", "w")
+    pairs = read_pairs(pairs_filename)
+    priorities = read_priorities(priorities_filename)
 
-    show_priorities("size_6_priorities.csv")
-    show_priorities("size_6_parings_0.csv")
-    for i in range(0, 5):
+    show_priorities(pairs_filename)
+    show_priorities(priorities_filename)
     
-        bIndex = 0
+    length = len(priorities['B'])
+
+    counter = 0
+
+    for i in range(length):
+    
+        blueIndex = 0
         currentBPair = pairs['B' + str(i)]
-        while priorities['B']['B' + str(i)][bIndex] != currentBPair:
-            bIndex += 1
-        print('priority B',i ,':', bIndex)
-
-
-        for j in range(0 , bIndex):
-            rIndex = 0
-            rBIndex = 0
-            currentR = priorities['B']['B' + str(i)][j]
-            while priorities['R'][currentR][rIndex] != 'B' + str(i):
-                rIndex += 1
-
-            print(currentR, 'priority for B' + str(i) ,':', rIndex)
-
-            for k in range(0, 5):
-                if (pairs['B' + str(k)] == currentR):
-                    while priorities['R'][currentR][rBIndex] != 'B' + str(k):
-                        rBIndex += 1
-                    print(currentR, 'priority for Current Pair B' + str(k) ,':', rBIndex)
-
-                    print('Difference in value =', (rIndex - rBIndex))
-
+        while priorities['B']['B' + str(i)][blueIndex] != currentBPair:
+            blueIndex += 1
         print('\n')
-    
+        print('priority B',i ,':', blueIndex)
 
+        for j in range(0 , blueIndex):
+            redIndex = 0
+            rblueIndex = 0
+            currentR = priorities['B']['B' + str(i)][j]
+            while priorities['R'][currentR][redIndex] != 'B' + str(i):
+                redIndex += 1
+
+            # print(currentR, 'priority for B' + str(i) ,':', redIndex)
+
+            for k in range(length):
+                if (pairs['B' + str(k)] == currentR):
+                    while priorities['R'][currentR][rblueIndex] != 'B' + str(k):
+                        rblueIndex += 1
+                    # print(currentR, 'priority for Current Pair B' + str(k) ,':', rblueIndex)
+
+                    # print('B' + str(k),'Difference in value =', (redIndex - rblueIndex))
+                    if (redIndex - rblueIndex < 0):
+                        print(currentR, 'and', 'B' + str(i), 'are a rogue pair')
+                        outputfile.write('B' + str(i))
+                        outputfile.write(' and ')
+                        outputfile.write(currentR)
+                        outputfile.write(' are a rogue pair')
+                        outputfile.write('\n')
+                        counter+=1
+
+        # print('\n')
+    
+    print(counter)
+    if (counter == 0):
+        outputfile.write('stable')
     return 0
 
 #This is where you need to implement the Gale-Shapley algorithm on a set of priorities defined
@@ -197,12 +213,9 @@ def main():
 #As stated in the comment for main(), I suggest you use this as the main program while you're
 #developing and debugging.
 def test():
-    # filename = "size_6_parings_0.csv"
-    # show_priorities(filename)
-    # dictionary = read_pairs(filename)
-    # print(dictionary['B0'])
-    # pair("size_6_priorities.csv", "BOYS", "GIRLS")
-    find_rogues("size_6_parings_0.csv", "size_6_priorities.csv")
+    filepairings = "size_10_parings_2.csv"
+    filepriorities = "size_10_priorities.csv"
+    find_rogues(filepairings, filepriorities)
     return 0
 
 #Here's where main() and/or test() gets executed when you run this script.
