@@ -81,6 +81,40 @@ def write_pairs(csv_filename,pairs):
 #return an empty set.
 def find_rogues(pairs_filename, priorities_filename):
     #TODO: identify rogue pairings
+    pairs = read_pairs("size_6_parings_0.csv")
+    priorities = read_priorities("size_6_priorities.csv")
+
+    show_priorities("size_6_priorities.csv")
+    show_priorities("size_6_parings_0.csv")
+    for i in range(0, 5):
+    
+        bIndex = 0
+        currentBPair = pairs['B' + str(i)]
+        while priorities['B']['B' + str(i)][bIndex] != currentBPair:
+            bIndex += 1
+        print('priority B',i ,':', bIndex)
+
+
+        for j in range(0 , bIndex):
+            rIndex = 0
+            rBIndex = 0
+            currentR = priorities['B']['B' + str(i)][j]
+            while priorities['R'][currentR][rIndex] != 'B' + str(i):
+                rIndex += 1
+
+            print(currentR, 'priority for B' + str(i) ,':', rIndex)
+
+            for k in range(0, 5):
+                if (pairs['B' + str(k)] == currentR):
+                    while priorities['R'][currentR][rBIndex] != 'B' + str(k):
+                        rBIndex += 1
+                    print(currentR, 'priority for Current Pair B' + str(k) ,':', rBIndex)
+
+                    print('Difference in value =', (rIndex - rBIndex))
+
+        print('\n')
+    
+
     return 0
 
 #This is where you need to implement the Gale-Shapley algorithm on a set of priorities defined
@@ -91,6 +125,29 @@ def find_rogues(pairs_filename, priorities_filename):
 #and the values are the girls.
 def pair(csv_path,boy_set_label,girl_set_label):
     #TODO: implement the Gale-Shapley algorithm
+    priorities = read_priorities("size_6_priorities.csv")
+    show_priorities("size_6_priorities.csv")
+    length = len(priorities['B'])
+
+    matched_pairs = {}
+    temp_list_girl = []
+    temp_list_boy = []
+    counter = 0
+    while (len(matched_pairs) < length):
+        boy = 'B' + str(counter)
+        boypref = priorities['B'][boy]
+        girl = priorities['B'][boy][0]
+        girlpref = priorities['R'][girl]
+        if not (girl in temp_list_girl):
+            temp_list_girl.append(girl)
+            temp_list_boy.append(boy)
+        else:
+            rank = 0
+        counter+=1
+        if counter == 2:
+            break
+
+
     return 0
 
 #This function should test Hall's conditions on a graph defined in a priorities CSV file.  It
@@ -140,6 +197,12 @@ def main():
 #As stated in the comment for main(), I suggest you use this as the main program while you're
 #developing and debugging.
 def test():
+    # filename = "size_6_parings_0.csv"
+    # show_priorities(filename)
+    # dictionary = read_pairs(filename)
+    # print(dictionary['B0'])
+    # pair("size_6_priorities.csv", "BOYS", "GIRLS")
+    find_rogues("size_6_parings_0.csv", "size_6_priorities.csv")
     return 0
 
 #Here's where main() and/or test() gets executed when you run this script.
