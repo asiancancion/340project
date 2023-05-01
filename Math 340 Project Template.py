@@ -82,6 +82,8 @@ def write_pairs(csv_filename,pairs):
 def find_rogues(pairs_filename, priorities_filename):
     #TODO: identify rogue pairings
     outputfile = open("roguepairings.txt", "w")
+    outputfile.write(pairs_filename)
+    outputfile.write('\n')
     pairs = read_pairs(pairs_filename)
     priorities = read_priorities(priorities_filename)
 
@@ -132,6 +134,9 @@ def find_rogues(pairs_filename, priorities_filename):
     if (counter == 0):
         outputfile.write('stable')
     return 0
+def Convert(lst):
+    res_dct = {lst[i]: lst[i + 1] for i in range(0, len(lst), 2)}
+    return res_dct
 
 #This is where you need to implement the Gale-Shapley algorithm on a set of priorities defined
 #in a CSV file located by the csv_path parameter.  boy_set_label and girl_set_label are strings
@@ -141,30 +146,148 @@ def find_rogues(pairs_filename, priorities_filename):
 #and the values are the girls.
 def pair(csv_path,boy_set_label,girl_set_label):
     #TODO: implement the Gale-Shapley algorithm
-    priorities = read_priorities("size_6_priorities.csv")
-    show_priorities("size_6_priorities.csv")
+    girls = {}
+    #put the girls as keys
+    priorities = read_priorities(csv_path)
+    #show_priorities(csv_path)
     length = len(priorities['B'])
-
-    matched_pairs = {}
-    temp_list_girl = []
-    temp_list_boy = []
-    counter = 0
-    while (len(matched_pairs) < length):
-        boy = 'B' + str(counter)
-        boypref = priorities['B'][boy]
-        girl = priorities['B'][boy][0]
-        girlpref = priorities['R'][girl]
-        if not (girl in temp_list_girl):
-            temp_list_girl.append(girl)
-            temp_list_boy.append(boy)
+    #create dictionary of girls
+    for i in range(length):
+        girls['R' + str(i)] = []
+    #while there are girls without a match
+    conditional = True
+    while(conditional):
+        #Each girl gets boys that want them first here
+        for i in range(length):
+            currentBoy = 'B' + str(i)
+            currentBoyTopPref = priorities['B'][currentBoy][0]
+            girls[currentBoyTopPref].append(currentBoy)
+        #print(girls)
+        #Find which boy each girl likes the best
+        for i in range(length):
+            if len(girls['R' + str(i)]) == 0:
+                continue
+            else:
+                #get intial priority for first boy in girls list
+                maxprio = priorities['R']['R'+str(i)].index(girls['R'+str(i)][0])
+                bestsuitor = priorities['R']['R'+str(i)][maxprio]
+                #get list of boys to see what you need to iterate through to check
+                listofboys = girls['R'+ str(i)]
+                listofboyslength = len(listofboys)
+                #find bestsuitor - person girl likes the best
+                for j in range(listofboyslength):
+                    priority = priorities['R']['R'+str(i)].index(girls['R'+str(i)][j])
+                    if priority < maxprio:
+                        maxprio = priority
+                        bestsuitor = priorities['R']['R'+str(i)][maxprio]
+                rejected = []
+                #Add those rejected to the list of rejected
+                for k in range(listofboyslength):
+                    checkboy = girls['R' + str(i)][k]
+                    if(checkboy) != bestsuitor:
+                        rejected.append(checkboy)
+                #delete these rejected boys 1st priority
+                lengthrejected = len(rejected)
+                for m in range(lengthrejected):
+                    priorities['B'][rejected[m]] = priorities['B'][rejected[m]][1:]
+                    #print(priorities['B'][rejected[m]])
+        #wipe girls dictionary and run the program again
+        
+        counter = 0
+        for i in range(length):
+            if (len(girls['R' + str(i)]) != 1):
+                break
+            else:
+                counter+=1
+        if counter == length:
+            conditional = False
+            return girls
         else:
-            rank = 0
-        counter+=1
-        if counter == 2:
-            break
-
-
+            for i in range(length):
+                girls['R' + str(i)] = []
     return 0
+
+
+#same thing as pair but with boys instead
+def pair2(csv_path,boy_set_label,girl_set_label):
+    #TODO: implement the Gale-Shapley algorithm
+    boys = {}
+    #put the girls as keys
+    priorities = read_priorities(csv_path)
+    #show_priorities(csv_path)
+    length = len(priorities['R'])
+    #create dictionary of girls
+    for i in range(length):
+        boys['B' + str(i)] = []
+    #while there are girls without a match
+    conditional = True
+    while(conditional):
+        #Each girl gets boys that want them first here
+        for i in range(length):
+            currentGirl = 'R' + str(i)
+            currentGirlTopPref = priorities['R'][currentGirl][0]
+            boys[currentGirlTopPref].append(currentGirl)
+        #print(girls)
+        #Find which boy each girl likes the best
+        for i in range(length):
+            if len(boys['B' + str(i)]) == 0:
+                continue
+            else:
+                #get intial priority for first boy in girls list
+                maxprio = priorities['B']['B'+str(i)].index(boys['B'+str(i)][0])
+                bestsuitor = priorities['B']['B'+str(i)][maxprio]
+                #get list of boys to see what you need to iterate through to check
+                listofgirls = boys['B'+ str(i)]
+                listofgirlslength = len(listofgirls)
+                #find bestsuitor - person girl likes the best
+                for j in range(listofgirlslength):
+                    priority = priorities['B']['B'+str(i)].index(boys['B'+str(i)][j])
+                    if priority < maxprio:
+                        maxprio = priority
+                        bestsuitor = priorities['B']['B'+str(i)][maxprio]
+                rejected = []
+                #Add those rejected to the list of rejected
+                for k in range(listofgirlslength):
+                    checkboy = boys['B' + str(i)][k]
+                    if(checkboy) != bestsuitor:
+                        rejected.append(checkboy)
+                #delete these rejected boys 1st priority
+                lengthrejected = len(rejected)
+                for m in range(lengthrejected):
+                    priorities['R'][rejected[m]] = priorities['R'][rejected[m]][1:]
+                    #print(priorities['B'][rejected[m]])
+        #wipe girls dictionary and run the program again
+        
+        counter = 0
+        for i in range(length):
+            if (len(boys['B' + str(i)]) != 1):
+                break
+            else:
+                counter+=1
+        if counter == length:
+            conditional = False
+            return boys
+        else:
+            for i in range(length):
+                boys['B' + str(i)] = []
+    return 0
+
+
+#create dictionary with girls as keys and list of suitors per day as dictionary,
+#search through here and find highest priority boy pop the rest out of the list
+#Take people that were rejected, delete those rejected from priority list, reset suitors now
+#check the priority list again, take those rejected and delete them from the priorities list
+
+#how to delete from priorities, list = list[1:]
+
+#wipe suitors, suitors = NULL dictionary
+
+#find which suitor is best, maxpriority = priorities[R][R5].index(B0)
+#for suitor in suitors['R5][1:]:
+#   if prefs['R]['R5].index(suitor) < maxprioritiy
+#       maxpriority = prefs['R]['R5].index(suitor)
+#       bestsuitor = suitor
+
 
 #This function should test Hall's conditions on a graph defined in a priorities CSV file.  It
 #will ensure that all members of the boys set can be paired to a girl from the girls set.  It
@@ -213,11 +336,78 @@ def main():
 #As stated in the comment for main(), I suggest you use this as the main program while you're
 #developing and debugging.
 def test():
-    filepairings = "size_10_parings_2.csv"
+    filepairings = "size_6_parings_1.csv"
+    filepriorities = "size_6_priorities.csv"
+    boylabel = "boy"
+    girllabel = "girl"
+    girlsdict = {}
+    boysdict = {}
+    # find_rogues(filepairings, filepriorities)
+    #pair2(filepriorities, boylabel, girllabel)
+    outputfile = open("stableBoyPref.txt", "w")    
+    girlsdict = pair(filepriorities, boylabel, girllabel)
+    outputfile.write(filepriorities)
+    outputfile.write("\n")
+    outputfile.write(str(girlsdict))
+    outputfile.write("\n")
+
     filepriorities = "size_10_priorities.csv"
-    find_rogues(filepairings, filepriorities)
+    girlsdict = pair(filepriorities, boylabel, girllabel)
+    outputfile.write(filepriorities)
+    outputfile.write("\n")
+    outputfile.write(str(girlsdict))
+    outputfile.write("\n")
+
+    filepriorities = "size_25_priorities.csv"
+    girlsdict = pair(filepriorities, boylabel, girllabel)
+    outputfile.write(filepriorities)
+    outputfile.write("\n")
+    outputfile.write(str(girlsdict))
+    outputfile.write("\n")    
+
+    filepriorities = "size_100_priorities.csv"
+    girlsdict = pair(filepriorities, boylabel, girllabel)
+    outputfile.write(filepriorities)
+    outputfile.write("\n")
+    outputfile.write(str(girlsdict))
+    outputfile.write("\n")
+
+    outputfile.close()
+    
+
+    outputfile = open("stabelGirlPref.txt", "w")   
+    filepriorities = "size_6_priorities.csv" 
+    boysdict = pair2(filepriorities, boylabel, girllabel)
+    outputfile.write(filepriorities)
+    outputfile.write("\n")
+    outputfile.write(str(boysdict))
+    outputfile.write("\n")
+
+    filepriorities = "size_10_priorities.csv"
+    boysdict = pair2(filepriorities, boylabel, girllabel)
+    outputfile.write(filepriorities)
+    outputfile.write("\n")
+    outputfile.write(str(boysdict))
+    outputfile.write("\n")
+
+    filepriorities = "size_25_priorities.csv"
+    boysdict = pair2(filepriorities, boylabel, girllabel)
+    outputfile.write(filepriorities)
+    outputfile.write("\n")
+    outputfile.write(str(boysdict))
+    outputfile.write("\n")    
+
+    filepriorities = "size_100_priorities.csv"
+    boysdict = pair2(filepriorities, boylabel, girllabel)
+    outputfile.write(filepriorities)
+    outputfile.write("\n")
+    outputfile.write(str(boysdict))
+    outputfile.write("\n")
+
+    outputfile.close()
+
     return 0
 
 #Here's where main() and/or test() gets executed when you run this script.
-#main()
+# main()
 test()
